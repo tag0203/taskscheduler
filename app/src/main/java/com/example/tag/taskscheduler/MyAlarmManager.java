@@ -5,6 +5,7 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.util.Log;
 
 public class MyAlarmManager {
@@ -46,7 +47,13 @@ public class MyAlarmManager {
         }
 
         Log.v("MyAlarmManagerログ",cal.getTimeInMillis()+"ms");
-        am.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), mAlarmSender);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+            am.setAlarmClock(new AlarmManager.AlarmClockInfo(cal.getTimeInMillis(), null), mAlarmSender);
+        }else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
+            am.setExact(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), mAlarmSender);
+        }else {
+            am.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), mAlarmSender);
+        }
         Log.v("MyAlarmManagerログ","アラームセット完了");
     }
 

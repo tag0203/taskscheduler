@@ -67,24 +67,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-        private void setFragment(android.support.v4.app.Fragment fragment) {
+    private void setFragment(android.support.v4.app.Fragment fragment) {
 
-                android.support.v4.app.FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.main_frame, fragment);
-                fragmentTransaction.commit();
-        }
+        android.support.v4.app.FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.main_frame, fragment);
+        fragmentTransaction.commit();
+    }
 
-        void move(){
+    void move() {
         //countdownにタスク関連のデータを送る
-        Intent intent = new Intent(getApplication(),AlarmActivity.class);
-        intent.putExtra("time",taskFragment.getTime());
-        intent.putExtra("amount",taskFragment.getAmount());
-        intent.putExtra("task",taskFragment.getMyDataset());
+        Intent intent = new Intent(getApplication(), AlarmActivity.class);
+        intent.putExtra("time", taskFragment.getTime());
+        intent.putExtra("amount", taskFragment.getAmount());
+        intent.putExtra("task", taskFragment.getMyDataset());
         intent.putExtra("cut time", taskFragment.getCutTime());
         intent.putExtra("finish time", homeFragment.getFTime());
         intent.putExtra("cut task", taskFragment.getCutTask());
         intent.putExtra("alarm time", homeFragment.getAtime());
         startActivity(intent);
-        }
+    }
 
 }

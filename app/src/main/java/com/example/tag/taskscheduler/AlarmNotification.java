@@ -10,6 +10,7 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 
 public class AlarmNotification extends Activity {
@@ -37,6 +38,11 @@ public class AlarmNotification extends Activity {
 //        KeyguardManager keyguard = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
 //        keylock = keyguard.newKeyguardLock("disableLock");
 //        keylock.disableKeyguard();
+
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
+                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         finish = (Button)findViewById(R.id.alarm_stop);
 
