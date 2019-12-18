@@ -29,24 +29,24 @@ public class Countdown extends AppCompatActivity {
 
     private TextView task;
     private TextView timerText;
-    private TextView nexttask;
-    private String[] mDataset = new String[20]; //タスク名
+    private TextView next_task;
+    private String[] task_name = new String[20]; //タスク名
     private int[] time = new int[20]; //タスクの理想時間
     private int[] cut_time = new int[20]; //タスクを省略してもよい時間
     private int[] ct = new int[20];
     private int[] cut_task = new int[20];
-    private int task_amount; //タスクの数
+    private int number_of_task; //タスクの数
     private int i = 0; //現在実行されているタスク
     private int k = 0; //現在省略されているタスク数
-    private int m_ct = 0; //カットできるタスク数
+    private int number_cut_task = 0; //カットできるタスク数
     private int now_time; //現在の時刻
-    private int f_time; //タスクを終了する時間、出発時間
+    private int time_leave_home; //タスクを終了する時間、出発時間
     private Calendar c1;
     private CountDown countDown;
     private FinishCountDown finishCountDown;
 
-    private int alltime;
-    private int allctime;
+    private int sum_task_time;
+    private int sum_cut_time;
 
     private final SimpleDateFormat HdataFormat =
             new SimpleDateFormat("H時間mm分ss秒", Locale.US);
@@ -72,17 +72,17 @@ public class Countdown extends AppCompatActivity {
 
         //タスクのデータを受け取る
         Intent intent = getIntent();
-        mDataset = intent.getStringArrayExtra("task");
+        task_name = intent.getStringArrayExtra("task");
         time = intent.getIntArrayExtra("time");
         cut_time = intent.getIntArrayExtra("cut time");
-        task_amount = intent.getIntExtra("amount",0);
-        f_time = intent.getIntExtra("finish time",0);
+        number_of_task = intent.getIntExtra("amount",0);
+        time_leave_home = intent.getIntExtra("finish time",0);
         ct = intent.getIntArrayExtra("cut task");
 
-        for(i=0;i<task_amount;i++){
+        for(i=0;i<number_of_task;i++){
             if(ct[i]!=0){
                 cut_task[ct[i]-1] = i;
-                m_ct++;
+                number_cut_task++;
             }
         }
         i = 0;
@@ -93,14 +93,14 @@ public class Countdown extends AppCompatActivity {
         timerText = findViewById(R.id.timer);
         timerText.setText(SdataFormat.format(0));
 
-        nexttask = findViewById(R.id.next_time);
+        next_task = findViewById(R.id.next_time);
 
         start_log();
         scheduling();
         c1 = Calendar.getInstance();
         now_time = (c1.get(Calendar.HOUR_OF_DAY))*3600+(c1.get(Calendar.MINUTE))*60+(c1.get(Calendar.SECOND));
-        if(f_time > now_time) {
-            finishCountDown = new FinishCountDown((f_time - now_time) * 1000, 10000);
+        if(time_leave_home > now_time) {
+            finishCountDown = new FinishCountDown((time_leave_home - now_time) * 1000, 10000);
             finishCountDown.start();
         }
 
@@ -110,7 +110,7 @@ public class Countdown extends AppCompatActivity {
                 countDown.cancel();
                 countDown.soundrelease();
                 i++;
-                if(i >= task_amount){
+                if(i >= number_of_task){
                     logFileOutput("実行終了");
                     Toast toast = Toast.makeText(Countdown.this, "全てのタスクが終了しました！", Toast.LENGTH_LONG);
                     toast.show();
@@ -130,79 +130,87 @@ public class Countdown extends AppCompatActivity {
         now_time = (c1.get(Calendar.HOUR_OF_DAY))*3600+(c1.get(Calendar.MINUTE))*60+(c1.get(Calendar.SECOND));
 
         //出発時刻との差を計算
-        if(now_time <= f_time){
-            now_time = f_time - now_time;
+        if(now_time <= time_leave_home){
+            //出発までの残り時間
+            now_time = time_leave_home - now_time;
 
             //求まった差とタスクの合計時間を比較
-            allctime = 0;
-            alltime = 0;
-            for(int l=i;l<task_amount;l++){
-                alltime += time[l];
-                allctime += cut_time[l];
+            sum_cut_time = 0;
+            sum_task_time = 0;
+            for(int l=i;l<number_of_task;l++){
+                sum_task_time += time[l];
+                sum_cut_time += cut_time[l];
             }
 
-            if(alltime <= now_time){
+            if(sum_task_time <= now_time){
 //                while(ct[i] != 0 && ct[i] <= k){
 //                    i++;
 //                }
-                now_time = now_time - alltime;
-                countDown = new CountDown((time[i] + (time[i] * now_time / alltime)) * 1000, interval);
-                logFileOutput("タスク加算 タスク名:"+mDataset[i]+" タスク時間:"+((time[i] + (time[i] * now_time / alltime))/60)+"分"+((time[i] + (time[i] * now_time / alltime))%60)+"秒");
-                if(i+1 < task_amount){
+                now_time = now_time - sum_task_time;
+                countDown = new CountDown((time[i] + (time[i] * now_time / sum_task_time)) * 1000, interval);
+                logFileOutput("タスク加算 タスク名:"+task_name[i]+" タスク時間:"+((time[i] + (time[i] * now_time / sum_task_time))/60)+"分"+((time[i] + (time[i] * now_time / sum_task_time))%60)+"秒");
+                if(i+1 < number_of_task){
                     int ntime = 0;
-                    ntime = (time[i+1] + (time[i+1] * now_time / alltime))*1000;
+                    ntime = (time[i+1] + (time[i+1] * now_time / sum_task_time))*1000;
                     if(ntime < 60000){
-                        nexttask.setText(mDataset[i+1]+" "+SdataFormat.format(ntime+54000000));
+                        next_task.setText(task_name[i+1]+" "+SdataFormat.format(ntime+54000000));
                     }else if(ntime < 3600000){
-                        nexttask.setText(mDataset[i+1]+" "+MdataFormat.format(ntime+54000000));
+                        next_task.setText(task_name[i+1]+" "+MdataFormat.format(ntime+54000000));
                     }else{
-                        nexttask.setText(mDataset[i+1]+" "+HdataFormat.format(ntime+54000000));
+                        next_task.setText(task_name[i+1]+" "+HdataFormat.format(ntime+54000000));
                     }
                 }else{
-                    nexttask.setText("次のタスクはありません");
+                    next_task.setText("次のタスクはありません");
                 }
             }else{
-                for(k=0;k<m_ct;k++){
-                    if(now_time > alltime - allctime){
+                for(k=0;k<number_cut_task;k++){
+                    if(now_time > sum_task_time - sum_cut_time){
                         break;
                     }
                     if(cut_task[k] >= i){
-                        alltime -= time[cut_task[k]];
-                        allctime -= cut_time[cut_task[k]];
+                        sum_task_time -= time[cut_task[k]];
+                        sum_cut_time -= cut_time[cut_task[k]];
                     }
                 }
-                if(now_time < alltime - allctime){
+                if(now_time < sum_task_time - sum_cut_time){
                     logFileOutput("タスクを削っても間に合わないため実行終了" + now_time);
                     Toast toast = Toast.makeText(Countdown.this, "削減可能なタスクを削っても間に合わないため実行終了", Toast.LENGTH_LONG);
                     toast.show();
                     finish();
                 }
-                while(ct[i] != 0 && ct[i] <= k && i < task_amount){
+                while(ct[i] != 0 && ct[i] <= k && i < number_of_task){
                     i++;
                 }
-                //タスク時間の計算
-                now_time = alltime - now_time;
-                countDown = new CountDown((time[i] - (now_time*cut_time[i]/allctime)) * 1000, interval);
-                logFileOutput("タスク省略 タスク名:"+mDataset[i]+" タスク時間:"+(time[i] - (now_time*cut_time[i]/allctime))/60+"分"+(time[i] - (now_time*cut_time[i]/allctime))%60+"秒");
-                int m = 1;
-                while(ct[i+m] != 0 && ct[i+m] <= k && i+m < task_amount){
-                    m++;
-                }
-                if(i+m < task_amount){
-                    int ntime = 0;
-                    ntime = (time[i+m] - (now_time*cut_time[i+m]/allctime)) * 1000;
-                    if(ntime < 60000){
-                        nexttask.setText(mDataset[i+1]+" "+SdataFormat.format(ntime+54000000));
-                    }else if(ntime < 3600000){
-                        nexttask.setText(mDataset[i+1]+" "+MdataFormat.format(ntime+54000000));
-                    }else{
-                        nexttask.setText(mDataset[i+1]+" "+HdataFormat.format(ntime+54000000));
+                if (i == number_of_task){
+                    logFileOutput("実行終了");
+                    Toast toast = Toast.makeText(Countdown.this, "全てのタスクが終了しました！", Toast.LENGTH_LONG);
+                    toast.show();
+                    finish();
+                }else {
+                    //タスク時間の計算
+                    now_time = sum_task_time - now_time;
+                    countDown = new CountDown((time[i] - (now_time * cut_time[i] / sum_cut_time)) * 1000, interval);
+                    logFileOutput("タスク省略 タスク名:" + task_name[i] + " タスク時間:" + (time[i] - (now_time * cut_time[i] / sum_cut_time)) / 60 + "分" + (time[i] - (now_time * cut_time[i] / sum_cut_time)) % 60 + "秒");
+                    int m = 1;
+                    while (ct[i + m] != 0 && ct[i + m] <= k && i + m < number_of_task) {
+                        m++;
                     }
-                }else{
-                    nexttask.setText("次のタスクはありません");
+                    if (i + m < number_of_task) {
+                        int ntime = 0;
+                        ntime = (time[i + m] - (now_time * cut_time[i + m] / sum_cut_time)) * 1000;
+                        if (ntime < 60000) {
+                            next_task.setText(task_name[i + 1] + " " + SdataFormat.format(ntime + 54000000));
+                        } else if (ntime < 3600000) {
+                            next_task.setText(task_name[i + 1] + " " + MdataFormat.format(ntime + 54000000));
+                        } else {
+                            next_task.setText(task_name[i + 1] + " " + HdataFormat.format(ntime + 54000000));
+                        }
+                    } else {
+                        next_task.setText("次のタスクはありません");
+                    }
                 }
             }
-            task.setText(mDataset[i]);
+            task.setText(task_name[i]);
             countDown.start();
         }else{
             logFileOutput("出発時間が現在時刻より前なので実行終了");
@@ -324,11 +332,11 @@ public class Countdown extends AppCompatActivity {
     }
 
     protected void start_log(){
-        for(int l=0;l<task_amount;l++){
-            alltime += time[l];
-            allctime += cut_time[l];
+        for(int l=0;l<number_of_task;l++){
+            sum_task_time += time[l];
+            sum_cut_time += cut_time[l];
         }
-        logFileOutput("タスク数:"+task_amount+" タスク合計時間:"+alltime/60+"分"+alltime%60+"秒 タスク省略可能時間:"+allctime/60+"分"+allctime%60+"秒");
+        logFileOutput("タスク数:"+number_of_task+" タスク合計時間:"+sum_task_time/60+"分"+sum_task_time%60+"秒 タスク省略可能時間:"+sum_cut_time/60+"分"+sum_cut_time%60+"秒");
     }
 
     private void sampleFileInput(){

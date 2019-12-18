@@ -81,13 +81,6 @@
         android:layout_gravity="bottom">
 
         <Button
-            android:id="@+id/add_task"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="タスク追加" />
-
-        <Button
             android:id="@+id/delete"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -100,6 +93,13 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="編集" />
+
+        <Button
+            android:id="@+id/add_task"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="タスク追加" />
     </LinearLayout>
 
 
